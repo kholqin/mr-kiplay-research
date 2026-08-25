@@ -43,12 +43,13 @@ export async function getOrCreateWorkspace(ownerId: number) {
   const result = await db.insert(workspaces).values({ ownerId, name: 'Primary Research Workspace', description: 'Authorized security research operations.', status: 'active' });
   const id = Number(result[0].insertId);
   const created = await db.select().from(workspaces).where(eq(workspaces.id, id)).limit(1);
+  if (created[0]) await db.insert(auditActivities).values({ workspaceId: created[0].id, actorId: ownerId, entityType: 'workspace', entityId: created[0].id, action: 'workspace.initialized' });
   return created[0] ?? null;
 }
 
 export async function getDashboardData(ownerId: number) {
   const db = await getDb();
-  const empty = { workspace: null, projects: [], findings: [], activities: [], stats: { projects: 0, openFindings: 0, highPriority: 0, evidence: 0 } };
+  const empty = { workspace: null, projects: [], findings: [], modules: [], activities: [], stats: { projects: 0, openFindings: 0, highPriority: 0, evidence: 0 } };
   if (!db) return empty;
   const workspace = await getOrCreateWorkspace(ownerId);
   if (!workspace) return empty;
@@ -56,8 +57,9 @@ export async function getDashboardData(ownerId: number) {
   const projectIds = projects.map(project => project.id);
   const allFindings = projectIds.length ? await db.select().from(findings).where(eq(findings.ownerId, ownerId)).orderBy(desc(findings.updatedAt)).limit(100) : [];
   const activities = await db.select().from(auditActivities).where(eq(auditActivities.workspaceId, workspace.id)).orderBy(desc(auditActivities.createdAt)).limit(12);
+  const modules = projectIds.length ? await db.select().from(workflowModules).where(eq(workflowModules.projectId, projectIds[0])).orderBy(desc(workflowModules.updatedAt)).limit(20) : [];
   const [evidenceCount] = await db.select({ count: sql<number>`count(*)` }).from(evidence).where(eq(evidence.ownerId, ownerId));
-  return { workspace, projects, findings: allFindings.filter(finding => projectIds.includes(finding.projectId)), activities, stats: { projects: projects.length, openFindings: allFindings.filter(finding => ['open', 'triaged'].includes(finding.status)).length, highPriority: allFindings.filter(finding => ['critical', 'high'].includes(finding.severity) && finding.status !== 'remediated').length, evidence: Number(evidenceCount?.count ?? 0) } };
+  return { workspace, projects, findings: allFindings.filter(finding => projectIds.includes(finding.projectId)), modules, activities, stats: { projects: projects.length, openFindings: allFindings.filter(finding => ['open', 'triaged'].includes(finding.status)).length, highPriority: allFindings.filter(finding => ['critical', 'high'].includes(finding.severity) && finding.status !== 'remediated').length, evidence: Number(evidenceCount?.count ?? 0) } };
 }
 
 export async function createProject(input: { ownerId: number; workspaceId: number; name: string; target: string; authorization: string; scope: string; complianceChecklist: string }) {

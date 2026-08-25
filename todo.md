@@ -20,11 +20,11 @@
 - [x] Responsive visual verification on desktop and mobile
 - [ ] Create private GitHub repository and push the completed project
 - [x] Add visible focus-visible states to all custom interactive controls and verify keyboard navigation
-- [ ] Wire workflow modules to persisted tRPC status and notes state
-- [ ] Implement findings UI and authenticated read/update flow with remediation status
-- [ ] Expand audit trail coverage to evidence, project status, finding status, and workspace actions
-- [ ] Add protected evidence upload/attachment flow using object storage metadata
-- [ ] Notify owner when project status changes
-- [ ] Add meaningful success-path tests for research procedures, audit logging, and notification conditions
-- [ ] Verify keyboard-only navigation across sidebar, mobile menu, dialog, form fields, and action buttons
-- [ ] Add an automated or documented accessibility check for focus states and keyboard interaction
+- [x] Wire workflow modules to persisted tRPC status and notes state
+- [x] Implement findings UI and authenticated read/update flow with remediation status
+- [x] Expand audit trail coverage to evidence, project status, finding status, and workspace actions
+- [x] Add protected evidence upload/attachment flow using object storage metadata
+- [x] Notify owner when project status changes
+- [x] Add meaningful success-path tests for research procedures, audit logging, and notification conditions
+- [x] Verify keyboard-only navigation across sidebar, mobile menu, dialog, form fields, and action buttons
+- [x] Add an automated or documented accessibility check for focus states and keyboard interaction
