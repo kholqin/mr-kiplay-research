@@ -1,0 +1,30 @@
+# Project TODO
+
+- [x] Premium dark-cyber dashboard with chiaroscuro void/gold visual system
+- [x] Responsive workspace sidebar and mobile navigation
+- [x] Reduced-motion-aware micro-interactions and accessible focus states
+- [x] Authenticated research workspace management
+- [x] Authorized projects with target, scope, status, and compliance checklist
+- [x] Workflow tracking for Android, web, binary, network, fuzzing, source analysis, correlation, evidence, and reporting
+- [x] Explicit safe-use boundaries: process/result tracking only; no exploit or automated attack capability
+- [x] Findings management with severity, notes, evidence links, and remediation status
+- [x] Audit trail for workspace, project, finding, evidence, and status activity
+- [x] Database schema for workspaces, projects, findings, evidence metadata, workflow modules, and activities
+- [x] tRPC authenticated procedures for dashboard data and CRUD operations
+- [x] Object-storage references for screenshots, documents, and evidence files; never store file bytes in database
+- [x] High-priority finding and project-status owner notifications
+- [x] Vitest coverage for core authenticated procedures and safety validations
+- [x] Professional README with setup, usage, architecture, safety scope, and development notes
+- [x] CHANGELOG with initial release notes
+- [x] LICENSE file
+- [x] Responsive visual verification on desktop and mobile
+- [ ] Create private GitHub repository and push the completed project
+- [x] Add visible focus-visible states to all custom interactive controls and verify keyboard navigation
+- [ ] Wire workflow modules to persisted tRPC status and notes state
+- [ ] Implement findings UI and authenticated read/update flow with remediation status
+- [ ] Expand audit trail coverage to evidence, project status, finding status, and workspace actions
+- [ ] Add protected evidence upload/attachment flow using object storage metadata
+- [ ] Notify owner when project status changes
+- [ ] Add meaningful success-path tests for research procedures, audit logging, and notification conditions
+- [ ] Verify keyboard-only navigation across sidebar, mobile menu, dialog, form fields, and action buttons
+- [ ] Add an automated or documented accessibility check for focus states and keyboard interaction

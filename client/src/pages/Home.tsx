@@ -1,33 +1,31 @@
-import { useAuth } from "@/_core/hooks/useAuth";
+import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
-import { Streamdown } from 'streamdown';
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { Activity, ArrowUpRight, Bug, CheckCircle2, ChevronRight, CircleDashed, FileText, FolderKanban, LockKeyhole, Plus, Radar, ScanLine, ShieldCheck, Sparkles, Target, Workflow, Zap } from "lucide-react";
+import { useState } from "react";
+import { useLocation } from "wouter";
 
-/**
- * All content in this page are only for example, replace with your own feature implementation
- * When building pages, remember your instructions in Frontend Workflow, Frontend Best Practices, Design Guide and Common Pitfalls
- */
+const modules = [
+  ["android", "Android analyzer", "Package, manifest & runtime notes", "01"], ["web", "Web research", "Assets, endpoints & observations", "02"], ["binary", "Binary review", "Metadata, symbols & dependencies", "03"], ["network", "Network mapping", "Services, traffic & evidence", "04"], ["fuzzing", "Fuzzing lab", "Corpus, crashes & deduplication", "05"], ["source_analysis", "Source analysis", "Rules, flows & code findings", "06"], ["correlation", "Correlation graph", "Connect assets to findings", "07"], ["evidence", "Evidence vault", "Immutable research artifacts", "08"], ["reporting", "Research reporting", "Exportable audit narrative", "09"],
+] as const;
+
 export default function Home() {
-  // The useAuth hook provides authentication state.
-  // To implement login/logout, call logout(), or start login from an event
-  // handler: onClick={() => startLogin()} (imported from "@/const"). Never call
-  // startLogin() during render (no href={startLogin()}) — it mints a one-time
-  // nonce cookie and must run only at the moment of navigation.
-  let { user, loading, error, isAuthenticated, logout } = useAuth();
-
-  // If theme is switchable in App.tsx, we can implement theme toggling like this:
-  // const { theme, toggleTheme } = useTheme();
-
-  return (
-    <div className="min-h-screen flex flex-col">
-      <main>
-        {/* Example: lucide-react for icons */}
-        <Loader2 className="animate-spin" />
-        Example Page
-        {/* Example: Streamdown for markdown rendering */}
-        <Streamdown>Any **markdown** content</Streamdown>
-        <Button variant="default">Example Button</Button>
-      </main>
-    </div>
-  );
+  const [location] = useLocation();
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState({ name: "", target: "", authorization: "", scope: "", complianceChecklist: "Authorization verified\nScope documented\nEvidence handling agreed" });
+  const query = trpc.research.dashboard.useQuery();
+  const createProject = trpc.research.createProject.useMutation({ onSuccess: () => { query.refetch(); setOpen(false); setForm({ name: "", target: "", authorization: "", scope: "", complianceChecklist: "Authorization verified\nScope documented\nEvidence handling agreed" }); } });
+  const data = query.data;
+  const pageTitle = location === "/projects" ? "Research projects" : location === "/findings" ? "Findings register" : location === "/workflows" ? "Workflow control" : location === "/evidence" ? "Evidence vault" : "Security overview";
+  const stats = [{ label: "Active projects", value: data?.stats.projects ?? 0, icon: FolderKanban, accent: "amber" }, { label: "Open findings", value: data?.stats.openFindings ?? 0, icon: Bug, accent: "rose" }, { label: "High priority", value: data?.stats.highPriority ?? 0, icon: Zap, accent: "orange" }, { label: "Evidence items", value: data?.stats.evidence ?? 0, icon: FileText, accent: "emerald" }];
+  return <div className="mx-auto max-w-[1500px] animate-in fade-in duration-500">
+    <section className="relative overflow-hidden rounded-[28px] border border-white/[0.08] bg-[radial-gradient(circle_at_85%_5%,rgba(228,174,81,.18),transparent_28%),linear-gradient(125deg,#101010,#090909_55%,#15110a)] px-5 py-7 shadow-2xl sm:px-8 sm:py-9"><div className="pointer-events-none absolute -right-16 -top-20 h-64 w-64 rounded-full bg-amber-200/10 blur-3xl" /><div className="relative flex flex-col justify-between gap-8 lg:flex-row lg:items-end"><div><div className="mb-4 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.28em] text-amber-300"><Sparkles className="h-3.5 w-3.5" /> Authorized research operations</div><h1 className="max-w-3xl text-4xl font-black uppercase leading-[0.95] tracking-[-0.06em] text-transparent bg-gradient-to-r from-zinc-500 via-zinc-100 to-white bg-clip-text sm:text-6xl">{pageTitle}</h1><p className="mt-5 max-w-xl text-sm leading-6 text-zinc-500">A single source of truth for evidence-led security research. Keep every target in scope, every action accountable, and every result reviewable.</p></div><div className="flex items-center gap-3"><Dialog open={open} onOpenChange={setOpen}><DialogTrigger asChild><Button className="h-11 gap-2 bg-amber-300 px-5 text-black hover:bg-amber-200"><Plus className="h-4 w-4" /> New project</Button></DialogTrigger><DialogContent className="border-white/10 bg-[#111] text-zinc-100 sm:max-w-lg"><DialogHeader><DialogTitle className="text-xl">Create authorized project</DialogTitle></DialogHeader><div className="space-y-3"><Input placeholder="Project name" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} /><Input placeholder="Target identifier" value={form.target} onChange={e => setForm({ ...form, target: e.target.value })} /><Textarea placeholder="Authorization record / reference" value={form.authorization} onChange={e => setForm({ ...form, authorization: e.target.value })} /><Textarea placeholder="Scope and boundaries" value={form.scope} onChange={e => setForm({ ...form, scope: e.target.value })} /><Textarea value={form.complianceChecklist} onChange={e => setForm({ ...form, complianceChecklist: e.target.value })} /><Button disabled={createProject.isPending || !form.name || !form.target || !form.authorization || !form.scope} onClick={() => createProject.mutate(form)} className="w-full bg-amber-300 text-black hover:bg-amber-200">{createProject.isPending ? "Creating…" : "Create scoped project"}</Button></div></DialogContent></Dialog><Button variant="outline" size="icon" className="hidden border-white/10 bg-white/[0.03] text-zinc-400 hover:bg-white/[0.08] sm:flex"><Radar className="h-4 w-4" /></Button></div></div></section>
+    <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">{stats.map((stat, i) => <div key={stat.label} className="cyber-card group p-5" style={{ animationDelay: `${i * 60}ms` }}><div className="flex items-start justify-between"><div className={`icon-box ${stat.accent}`}><stat.icon className="h-4 w-4" /></div><ArrowUpRight className="h-4 w-4 text-zinc-700 transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-amber-300" /></div><p className="mt-7 text-3xl font-black tracking-tight text-zinc-100">{stat.value}</p><p className="mt-1 text-xs uppercase tracking-[0.16em] text-zinc-600">{stat.label}</p></div>)}</div>
+    <div className="mt-6 grid gap-6 xl:grid-cols-[1.35fr_.65fr]"><section className="cyber-card p-5 sm:p-6"><div className="mb-6 flex items-center justify-between"><div><p className="eyebrow">Research pipeline</p><h2 className="mt-2 text-xl font-bold text-zinc-100">Current projects</h2></div><Button variant="ghost" className="gap-1 text-xs text-zinc-500 hover:text-amber-300">View all <ChevronRight className="h-3.5 w-3.5" /></Button></div>{data?.projects?.length ? <div className="space-y-2">{data.projects.map(project => <div key={project.id} className="flex flex-col gap-3 rounded-2xl border border-white/[0.05] bg-white/[0.02] p-4 transition hover:border-amber-300/20 hover:bg-amber-300/[0.03] sm:flex-row sm:items-center sm:justify-between"><div className="flex items-start gap-3"><div className="mt-0.5 rounded-lg bg-amber-300/10 p-2 text-amber-300"><Target className="h-4 w-4" /></div><div><p className="font-semibold text-zinc-200">{project.name}</p><p className="mt-1 max-w-md truncate text-xs text-zinc-600">{project.target} · scope locked</p></div></div><Badge className="w-fit border-amber-300/15 bg-amber-300/10 text-amber-200">{project.status.replace("_", " ")}</Badge></div>)}</div> : <EmptyState title="No projects yet" copy="Create your first authorized research workspace to begin an auditable workflow." />}</section><section className="cyber-card p-5 sm:p-6"><div className="mb-6"><p className="eyebrow">Audit trail</p><h2 className="mt-2 text-xl font-bold text-zinc-100">Recent activity</h2></div>{data?.activities?.length ? <div className="space-y-4">{data.activities.map(activity => <div key={activity.id} className="flex gap-3"><div className="mt-1 h-2 w-2 rounded-full bg-amber-300 shadow-[0_0_10px_#e4ae51]" /><div><p className="text-sm text-zinc-300">{activity.action.replaceAll(".", " / ")}</p><p className="mt-1 text-[11px] text-zinc-600">{new Date(activity.createdAt).toLocaleString()}</p></div></div>)}</div> : <div className="rounded-2xl border border-dashed border-white/10 p-5 text-sm leading-6 text-zinc-600">Every project, finding, and workflow transition will appear here with actor and timestamp metadata.</div>}</section></div>
+    <section className="mt-6 cyber-card p-5 sm:p-6"><div className="mb-6 flex flex-col justify-between gap-3 sm:flex-row sm:items-end"><div><p className="eyebrow">Operational modules</p><h2 className="mt-2 text-xl font-bold text-zinc-100">Research workflow map</h2></div><div className="flex items-center gap-2 text-[11px] text-zinc-600"><LockKeyhole className="h-3.5 w-3.5 text-emerald-400" /> Tracking only · no automated attack actions</div></div><div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{modules.map(([key, label, copy, number]) => <button key={key} className="module-card text-left"><span className="text-[10px] font-bold text-amber-300/60">{number}</span><div className="mt-5 flex items-center justify-between"><div><p className="font-semibold text-zinc-200">{label}</p><p className="mt-1 text-xs text-zinc-600">{copy}</p></div><ChevronRight className="h-4 w-4 text-zinc-700 transition group-hover:text-amber-300" /></div></button>)}</div></section>
+  </div>;
 }
+function EmptyState({ title, copy }: { title: string; copy: string }) { return <div className="rounded-2xl border border-dashed border-white/10 p-8 text-center"><CircleDashed className="mx-auto h-7 w-7 text-zinc-700" /><p className="mt-3 font-semibold text-zinc-400">{title}</p><p className="mx-auto mt-2 max-w-sm text-xs leading-5 text-zinc-600">{copy}</p></div>; }
